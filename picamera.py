@@ -29,7 +29,7 @@ class Camera:
             frame (numpy array): Imagem capturada pela câmera no formato BGR.
         """
         # Captura uma única imagem
-        frame = self.camera.capture_array("RGB888")
+        frame = self.camera.capture_array("BGR888")
         return frame  # Retorna a imagem capturada em formato numpy array
 
     def stream(self):

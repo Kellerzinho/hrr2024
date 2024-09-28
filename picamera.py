@@ -1,50 +1,46 @@
-from picamera.array import PiRGBArray
-from picamera import PiCamera
-import cv2
 import time
+import cv2
+from picamera2 import Picamera2, Preview
 
 class Camera:
     def __init__(self, resolution=(640, 480), framerate=32):
         """
-        Inicializa a PiCamera com a resolução e framerate especificados.
+        Inicializa a Picamera2 com a resolução e framerate especificados.
 
         Args:
             resolution (tuple): Resolução da câmera (largura, altura).
             framerate (int): Taxa de quadros por segundo da câmera.
         """
-        self.camera = PiCamera()
-        self.camera.resolution = resolution
-        self.camera.framerate = framerate
-        self.raw_capture = PiRGBArray(self.camera, size=resolution)
+        self.camera = Picamera2()
+        self.camera.configure(self.camera.create_preview_configuration(main={"format": 'RGB888', "size": resolution}))
+        
+        # Começar a visualização (opcional)
+        self.camera.start_preview(Preview.QTGL)
         
         # Dar tempo para a câmera inicializar
-        time.sleep(0.1)
+        time.sleep(1)  # Aumentei o tempo para a inicialização
 
     def capture_frame(self):
         """
-        Captura uma única imagem da PiCamera e a retorna em formato BGR.
+        Captura uma única imagem da Picamera2 e a retorna em formato BGR.
 
         Returns:
             frame (numpy array): Imagem capturada pela câmera no formato BGR.
         """
-        self.raw_capture.truncate(0)  # Limpar o buffer anterior
-        self.camera.capture(self.raw_capture, format="bgr")
-        frame = self.raw_capture.array  # Captura a imagem em formato numpy array
-        return frame
+        # Captura uma única imagem
+        frame = self.camera.capture_array()
+        return frame  # Retorna a imagem capturada em formato numpy array
 
     def stream(self):
         """
-        Inicia o stream da PiCamera, permitindo capturar frames continuamente.
+        Inicia o stream da Picamera2, permitindo capturar frames continuamente.
 
         Yields:
             frame (numpy array): Frame capturado em tempo real no formato BGR.
         """
-        for frame in self.camera.capture_continuous(self.raw_capture, format="bgr", use_video_port=True):
-            image = frame.array  # Captura a imagem no formato numpy array
-            yield image  # Retorna a imagem capturada
-            
-            # Limpar o buffer de captura para o próximo frame
-            self.raw_capture.truncate(0)
+        while True:
+            frame = self.camera.capture_array()  # Captura o frame em formato numpy array
+            yield frame  # Retorna a imagem capturada
 
     def stop_camera(self):
         """

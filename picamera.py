@@ -15,7 +15,7 @@ class Camera:
         self.camera.configure(self.camera.create_preview_configuration(main={"format": 'RGB888', "size": resolution}))
         
         # Começar a visualização (opcional)
-        self.camera.start_preview(Preview.DRM)
+        self.camera.start_preview(Preview.QTGL)
         self.camera.start() 
 
         # Dar tempo para a câmera inicializar
